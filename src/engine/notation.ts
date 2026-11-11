@@ -110,12 +110,3 @@ export function moveToSan(position: Position, move: number): string {
   position.unmake();
   return san;
 }
-
-/** The app's move (square indexes, 0 = a8) in standard algebraic notation, or "" if illegal. */
-export function appMoveToSan(before: BotPosition, start: number, end: number): string {
-  const position = new Position(before);
-  const move = position
-    .legalMoves()
-    .find((m) => to64(moveFrom(m)) === start && to64(moveTo(m)) === end);
-  return move ? moveToSan(position, move) : "";
-}

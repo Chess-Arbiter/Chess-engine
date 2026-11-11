@@ -1,13 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { defaultCastlingConditions } from "../constants/castlingConditions";
-import initializeBoard from "../helpers/board/initializeBoard";
-import { EPlayer } from "../models/enums/Player.enum";
 import { bookMove, buildBook, buildMainReplies } from "./book";
-import { chooseMove, chooseUciMove } from "./bot";
+import { chooseUciMove } from "./bot";
 import { replayGame } from "./game";
 import { BOT_LEVELS, BotSettings } from "./levels";
 import {
-  appMoveToSan,
   findUciMove,
   fromFen,
   moveToSan,
@@ -16,7 +12,6 @@ import {
   squareName,
   startPosition,
 } from "./notation";
-import { toBotPosition } from "./fromApp";
 import { BotPosition, moveFrom, moveTo, Position, to64 } from "./position";
 import { isMateScore, MATE, search } from "./search";
 
@@ -120,20 +115,14 @@ describe("search", () => {
   });
 });
 
-describe("integration with the app", () => {
-  it("converts the app's starting board", () => {
-    const converted = toBotPosition(initializeBoard(), EPlayer.white, defaultCastlingConditions, -1);
-    expect(converted).toEqual(startPosition());
-  });
-
+describe("opening book", () => {
   it("has only legal lines in the opening book", () => {
     expect(() => buildBook()).not.toThrow();
   });
 
   it("opens with a book move, not a knight hop", () => {
-    const move = chooseMove(startPosition(), [], settings(500))!;
-    // e4, d4 or c4.
-    expect([52, 51, 50]).toContain(move.start);
+    const move = chooseUciMove(startPosition(), [], settings(500))!;
+    expect(["e2", "d2", "c2"]).toContain(move.slice(0, 2));
   });
 
   it("knows the Petrov defence", () => {
@@ -154,9 +143,12 @@ describe("integration with the app", () => {
     for (let i = 0; i < 20; i++) expect(moveToUci(bookMove(position))).toBe("g8f6");
   });
 
+});
+
+describe("search with history", () => {
   it("still finds a move when the position has already repeated", () => {
     const start = fromFen("8/8/8/4k3/8/8/8/3QK3 w - -");
-    expect(chooseMove(start, [start, start], settings(300))).not.toBeNull();
+    expect(chooseUciMove(start, [start, start], settings(300))).not.toBeNull();
   });
 });
 
@@ -194,20 +186,15 @@ describe("notation", () => {
     expect(san("4k3/R7/8/8/8/8/8/R3K3 w - -", "a1a4")).toBe("R1a4");
     expect(san("4k3/8/8/8/Q2Q4/8/8/Q5K1 w - -", "a4d1")).toBe("Qa4d1");
   });
-
-  it("converts the app's moves", () => {
-    expect(appMoveToSan(startPosition(), parseSquare("e2"), parseSquare("e4"))).toBe("e4");
-    expect(appMoveToSan(startPosition(), parseSquare("e2"), parseSquare("e5"))).toBe("");
-  });
 });
 
 describe("difficulty levels", () => {
   it("always finds a legal move, on every level", () => {
     const position = new Position(startPosition());
-    const legal = position.legalMoves().map((m) => `${to64(moveFrom(m))}-${to64(moveTo(m))}`);
+    const legal = position.legalMoves().map(moveToUci);
     for (const level of BOT_LEVELS) {
-      const move = chooseMove(startPosition(), [], { ...level.settings, timeLimitMs: 50 })!;
-      expect(legal).toContain(`${move.start}-${move.end}`);
+      const move = chooseUciMove(startPosition(), [], { ...level.settings, timeLimitMs: 50 })!;
+      expect(legal).toContain(move);
     }
   });
 

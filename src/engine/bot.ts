@@ -1,32 +1,15 @@
 import { bookMove } from "./book";
 import { BotSettings } from "./levels";
 import { moveToUci } from "./notation";
-import { BotPosition, moveFrom, moveTo, Position, to64 } from "./position";
+import { BotPosition, Position } from "./position";
 import { search } from "./search";
 
-export interface BotMove {
-  /** App square indexes (0 = a8). */
-  start: number;
-  end: number;
-}
-
 /**
- * Picks the bot's move: a book move in the opening, otherwise the best move found within the
- * level's time and depth limits (sometimes a random one on the easier levels).
- * `history` holds the earlier positions of the game, to avoid repetitions.
+ * Picks the bot's move in UCI ("e2e4", "e7e8q"): a book move in the opening, otherwise the best
+ * move found within the level's time and depth limits (sometimes a random one on the easier
+ * levels). `history` holds the earlier positions of the game, to avoid repetitions.
+ * Returns null when there is no legal move.
  */
-export function chooseMove(
-  current: BotPosition,
-  history: BotPosition[],
-  settings: BotSettings
-): BotMove | null {
-  const position = new Position(current, history);
-  const move = pickMove(position, settings);
-  if (!move) return null;
-  return { start: to64(moveFrom(move)), end: to64(moveTo(move)) };
-}
-
-/** Like `chooseMove`, but answers in UCI ("e2e4", "e7e8q"), or null when there is no legal move. */
 export function chooseUciMove(
   current: BotPosition,
   history: BotPosition[],

@@ -7,7 +7,7 @@ RUN npm ci
 COPY tsconfig*.json ./
 COPY src ./src
 COPY lichess ./lichess
-RUN npm run build:lichess
+RUN npm run build
 
 FROM node:24-slim
 WORKDIR /app
