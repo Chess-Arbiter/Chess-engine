@@ -29,13 +29,30 @@ It needs a BOT account and an API token with the `bot:play` scope, in `.env`:
 - `npm run lichess -- upgrade` turns a fresh account (no games played) into a BOT account. This cannot be undone.
 - `npm test` runs the engine tests, `npm run typecheck` checks the types.
 
-### On a server (Docker)
+### On a server (Docker Hub)
 
-    git clone https://github.com/ArtyomSukiasyan/Chess-engine.git
-    cd Chess-engine
-    echo "LICHESS_TOKEN=lip_..." > .env
-    docker compose up -d --build
+The image is published as `artiom1401/artiom1401:lichess-bot`. To publish a new version (after `docker login`):
 
-Docker restarts the bot after crashes and reboots. `docker compose logs -f` shows its games;
-after `git pull`, run `docker compose up -d --build` again to update it.
+    docker compose build
+    docker compose push
+
+On the server, only `docker-compose.yml` and a `.env` with the token are needed:
+
+    docker login            # the repository is private
+    docker compose pull
+    docker compose up -d
+
+Docker restarts the bot after crashes and reboots, and `docker compose logs -f` shows its games.
+To update, push a new image, then run `docker compose pull && docker compose up -d` on the server.
 Run the bot in one place only: two copies on the same account would both play the same games.
+
+### CI/CD
+
+`.github/workflows/main.yml` runs the type check and tests on every push and pull request.
+Pushes to `main` then build and push the image to Docker Hub and redeploy it on the server over SSH
+(`docker compose pull && docker compose up -d`). It needs these repository secrets:
+
+- `REGISTRY_USERNAME`, `REGISTRY_PASSWORD`: Docker Hub username and an access token with read & write access
+- `SSH_HOST`, `SSH_USER`, `SSH_KEY`: the server, a user that can run docker, and its private SSH key
+- `SSH_PORT`: optional, defaults to 22
+- `DEPLOY_PATH`: folder on the server with `docker-compose.yml` and `.env`

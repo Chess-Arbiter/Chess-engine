@@ -1,6 +1,9 @@
-# Runs the Lichess bot. On the server: put LICHESS_TOKEN in .env, then run `docker compose up -d --build`.
+# Runs the Lichess bot from Docker Hub.
+#   Your PC: `docker compose build && docker compose push` publishes a new image.
+#   Server:  put LICHESS_TOKEN in .env next to this file, then `docker compose pull && docker compose up -d`.
 services:
   lichess-bot:
+    image: artiom1401/artiom1401:lichess-bot
     build: .
     restart: unless-stopped
     init: true
