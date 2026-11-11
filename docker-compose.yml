@@ -1,4 +1,4 @@
-# Runs the Lichess bot. On the server: put LICHESS_TOKEN in .env, then `docker compose up -d --build`.
+# Runs the Lichess bot. On the server: put LICHESS_TOKEN in .env, then run `docker compose up -d --build`.
 services:
   lichess-bot:
     build: .
