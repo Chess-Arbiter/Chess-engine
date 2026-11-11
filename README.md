@@ -49,10 +49,6 @@ Run the bot in one place only: two copies on the same account would both play th
 ### CI/CD
 
 `.github/workflows/main.yml` runs the type check and tests on every push and pull request.
-Pushes to `main` then build and push the image to Docker Hub and redeploy it on the server over SSH
-(`docker compose pull && docker compose up -d`). It needs these repository secrets:
-
-- `REGISTRY_USERNAME`, `REGISTRY_PASSWORD`: Docker Hub username and an access token with read & write access
-- `SSH_HOST`, `SSH_USER`, `SSH_KEY`: the server, a user that can run docker, and its private SSH key
-- `SSH_PORT`: optional, defaults to 22
-- `DEPLOY_PATH`: folder on the server with `docker-compose.yml` and `.env`
+Pushes to `main` then build and push the image to Docker Hub. It needs two repository secrets:
+`REGISTRY_USERNAME` (Docker Hub username) and `REGISTRY_PASSWORD` (an access token with read & write access).
+To update the server afterwards, run `docker compose pull && docker compose up -d` there.
